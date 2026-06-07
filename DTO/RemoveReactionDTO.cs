@@ -4,7 +4,7 @@ namespace WebTgBotAssistant.DTO;
 
 public class RemoveReactionDTO
 {
-    public string ReactionType { get; set; }
+    public MemberReactionType ReactionType { get; set; }
 
     public string Key { get; set; }
 }

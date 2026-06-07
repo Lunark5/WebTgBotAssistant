@@ -4,7 +4,7 @@ namespace WebTgBotAssistant.DTO;
 
 public class AddReactionDTO
 {
-    public string ReactionType { get; set; }
+    public MemberReactionType ReactionType { get; set; }
 
     public MemberReactionDTO Reaction { get; set; } = null!;
 }

@@ -38,30 +38,27 @@ builder.Services.AddHttpClient("TgBot")
         return new TelegramBotClient(token, httpClient);
     });
 
-builder.Services.AddTransient<MessageReactions>();
 builder.Services.AddTransient<WebHookInitializer>();
+builder.Services.AddSingleton<OpenAiClient>();
+builder.Services.AddScoped<MessageReactions>();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+using var scope = app.Services.CreateScope();
 
-    context.Database.EnsureCreated();
-}
+var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-using (var scope = app.Services.CreateScope())
-{
-    var initializer = scope.ServiceProvider.GetRequiredService<WebHookInitializer>();
-    var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+context.Database.EnsureCreated();
 
-    await initializer.Initialize(botClient);
-}
+var initializer = scope.ServiceProvider.GetRequiredService<WebHookInitializer>();
+var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+
+await initializer.Initialize(botClient);
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.MapScalarApiReference(); 
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection();

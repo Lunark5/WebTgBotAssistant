@@ -26,6 +26,10 @@ bld/
 .idea/
 *.iml
 
+app.db
+app.db-shm
+app.db-wal
+
 # .NET Core
 project.lock.json
 project.fragment.lock.json

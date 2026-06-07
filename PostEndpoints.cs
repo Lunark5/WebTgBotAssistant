@@ -12,8 +12,9 @@ public static class PostEndpoints
 {
     public static void MapPostEndpoints(this IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapPost(ApplicationConstants.WebhookEndpoint,
-            ([FromBody] Update update, IOptions<AppOptions> options, MessageReactions messageReactions) =>
+        endpoints.MapPost(ApplicationConstants.WebhookEndpoint, async ([FromBody] Update update, 
+            IOptions<AppOptions> options, 
+            MessageReactions messageReactions) =>
             {
                 if (update.Message == null)
                 {
@@ -26,12 +27,12 @@ public static class PostEndpoints
                 {
                     if (options.Value.AllowedChatIds.Contains(message.Chat.Id))
                     {
-                        ReactToMessage(message, messageReactions);
+                        await ReactToMessage(message, messageReactions);
                     }
                 }
                 else
                 {
-                    ReactToMessage(message, messageReactions);
+                    await ReactToMessage(message, messageReactions);
                 }
 
                 return Results.Ok();
@@ -91,8 +92,16 @@ public static class PostEndpoints
     {
         Log.Information($"Новое сообщение: {message.From?.Username}:{message.Text}");
 
-        await messageReactions.ReactToNewUser(message);
-        await messageReactions.ReactToLeaveUser(message);
-        await messageReactions.ReactToChannelMessage(message);
+        try
+        {
+            await messageReactions.ReactToNewUser(message);
+            await messageReactions.ReactToLeaveUser(message);
+            await messageReactions.ReactToChannelMessage(message);
+            await messageReactions.ReactToAppeal(message);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning($"Произошла ошибка в обработке сообщения: {ex.Message}");
+        }
     }
 }

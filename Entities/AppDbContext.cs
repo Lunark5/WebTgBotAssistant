@@ -10,23 +10,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<NewMemberReaction> NewMemberReactions => Set<NewMemberReaction>();
     public DbSet<ChannelMessageReaction> ChannelMessageReactions => Set<ChannelMessageReaction>();
 
-    public async Task AddAsync(string memberReactionType, MemberReaction memberReaction)
+    public async Task AddAsync(MemberReactionType memberReactionType, MemberReaction memberReaction)
     {
         switch (memberReactionType)
         {
-            case ApplicationConstants.LeaveMemberReactionText:
+            case MemberReactionType.LeaveMember:
             {
                 await LeaveMemberReactions.AddAsync(new LeaveMemberReaction(memberReaction));
 
                 break;
             }
-            case ApplicationConstants.NewMemberReactionText:
+            case MemberReactionType.NewMember:
             {
                 await NewMemberReactions.AddAsync(new NewMemberReaction(memberReaction));
 
                 break;
             }
-            case ApplicationConstants.ChannelMessageReactionText:
+            case MemberReactionType.ChannelMessage:
             {
                 await ChannelMessageReactions.AddAsync(new ChannelMessageReaction(memberReaction));
 
@@ -39,11 +39,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         await SaveChangesAsync();
     }
 
-    public async Task RemoveAsync(string memberReactionType, string key)
+    public async Task RemoveAsync(MemberReactionType memberReactionType, string key)
     {
         switch (memberReactionType)
         {
-            case ApplicationConstants.LeaveMemberReactionText:
+            case MemberReactionType.LeaveMember:
             {
                 var entity = LeaveMemberReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
@@ -53,7 +53,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
                 break;
             }
-            case ApplicationConstants.NewMemberReactionText:
+            case MemberReactionType.NewMember:
             {
                 var entity = NewMemberReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
@@ -63,7 +63,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
                 break;
             }
-            case ApplicationConstants.ChannelMessageReactionText:
+            case MemberReactionType.ChannelMessage:
             {
                 var entity = ChannelMessageReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
@@ -80,11 +80,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         await SaveChangesAsync();
     }
 
-    public bool IsExists(string memberReactionType, string key)
+    public bool IsExists(MemberReactionType memberReactionType, string key)
     {
         switch (memberReactionType)
         {
-            case ApplicationConstants.LeaveMemberReactionText:
+            case MemberReactionType.LeaveMember:
             {
                 var entity = LeaveMemberReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
@@ -94,7 +94,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
                 break;
             }
-            case ApplicationConstants.NewMemberReactionText:
+            case MemberReactionType.NewMember:
             {
                 var entity = NewMemberReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
@@ -104,7 +104,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
                 break;
             }
-            case ApplicationConstants.ChannelMessageReactionText:
+            case MemberReactionType.ChannelMessage:
             {
                 var entity = ChannelMessageReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
