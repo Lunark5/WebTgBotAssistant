@@ -7,4 +7,5 @@ public enum MemberReactionType
     NewMember,
     LeaveMember,
     ChannelMessage,
+    TextMember
 }

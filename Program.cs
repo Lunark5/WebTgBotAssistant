@@ -1,10 +1,13 @@
+using System.Threading.Channels;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using WebTgBotAssistant;
 using WebTgBotAssistant.Models;
+using WebTgBotAssistant.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,9 +41,17 @@ builder.Services.AddHttpClient("TgBot")
         return new TelegramBotClient(token, httpClient);
     });
 
+builder.Services.AddHostedService<OpenAiProcessingWorker>();
 builder.Services.AddTransient<WebHookInitializer>();
-builder.Services.AddSingleton<OpenAiClient>();
 builder.Services.AddScoped<MessageReactions>();
+
+builder.Services.AddSingleton<BotInfoContainer>();
+builder.Services.AddSingleton<OpenAiClient>();
+builder.Services.AddSingleton<TriggerCache>();
+builder.Services.AddSingleton(Channel.CreateBounded<Message>(new BoundedChannelOptions(1000)
+{
+    FullMode = BoundedChannelFullMode.Wait
+}));
 
 var app = builder.Build();
 
@@ -50,16 +61,20 @@ var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
 context.Database.EnsureCreated();
 
-var initializer = scope.ServiceProvider.GetRequiredService<WebHookInitializer>();
 var botClient = scope.ServiceProvider.GetRequiredService<ITelegramBotClient>();
+var initializer = scope.ServiceProvider.GetRequiredService<WebHookInitializer>();
+var botInfo = scope.ServiceProvider.GetRequiredService<BotInfoContainer>();
+var triggerCache = scope.ServiceProvider.GetRequiredService<TriggerCache>();
 
 await initializer.Initialize(botClient);
+await triggerCache.RefreshAsync();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-}
+var user = await botClient.GetMe();
+
+botInfo.Initialize(user);
+
+app.MapOpenApi();
+app.MapScalarApiReference();
 
 app.UseHttpsRedirection();
 app.MapPostEndpoints();

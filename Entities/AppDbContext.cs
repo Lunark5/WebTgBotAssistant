@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 using WebTgBotAssistant.Entities;
 using WebTgBotAssistant.Models;
 
@@ -9,9 +10,19 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<LeaveMemberReaction> LeaveMemberReactions => Set<LeaveMemberReaction>();
     public DbSet<NewMemberReaction> NewMemberReactions => Set<NewMemberReaction>();
     public DbSet<ChannelMessageReaction> ChannelMessageReactions => Set<ChannelMessageReaction>();
+    public DbSet<TextMemberReaction> TextMemberReactions => Set<TextMemberReaction>();
+
+    public DbSet<TextVariable> TextVariables => Set<TextVariable>();
 
     public async Task AddAsync(MemberReactionType memberReactionType, MemberReaction memberReaction)
     {
+        if (IsExists(memberReactionType, memberReaction.Key))
+        {
+            Log.Warning($"{memberReaction.Key} уже существует");
+
+            return;
+        }
+
         switch (memberReactionType)
         {
             case MemberReactionType.LeaveMember:
@@ -41,6 +52,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     public async Task RemoveAsync(MemberReactionType memberReactionType, string key)
     {
+        if (!IsExists(memberReactionType, key))
+        {
+            Log.Warning($"{key} не найден");
+
+            return;
+        }
+
         switch (memberReactionType)
         {
             case MemberReactionType.LeaveMember:
@@ -73,9 +91,50 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
                 break;
             }
+            case MemberReactionType.TextMember:
+            {
+                var entity = TextMemberReactions.FirstOrDefault(x => x.Key == key);
+                if (entity != null)
+                {
+                    TextMemberReactions.Remove(entity);
+                }
+
+                break;
+            }
             default:
                 throw new ArgumentOutOfRangeException(nameof(memberReactionType), memberReactionType, null);
         }
+
+        await SaveChangesAsync();
+    }
+
+    public async Task AddTextReactionAsync(TextMemberReaction textMemberReaction)
+    {
+        if (IsExists(MemberReactionType.TextMember, textMemberReaction.Key))
+        {
+            Log.Warning($"{textMemberReaction.Key} уже существует");
+
+            return;
+        }
+
+        await TextMemberReactions.AddAsync(textMemberReaction);
+        await SaveChangesAsync();
+    }
+
+    public async Task AddTextVariableAsync(TextVariable textVariable)
+    {
+        TextVariables.Add(textVariable);
+
+        await SaveChangesAsync();
+    }
+
+    public async Task RemoveTextVariableAsync(string id)
+    {
+        var entity = TextVariables.FirstOrDefault(x => x.Id == Guid.Parse(id));
+
+        if (entity == null) return;
+
+        TextVariables.Remove(entity);
 
         await SaveChangesAsync();
     }
@@ -107,6 +166,16 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             case MemberReactionType.ChannelMessage:
             {
                 var entity = ChannelMessageReactions.FirstOrDefault(x => x.Key == key);
+                if (entity != null)
+                {
+                    return true;
+                }
+
+                break;
+            }
+            case MemberReactionType.TextMember:
+            {
+                var entity = TextMemberReactions.FirstOrDefault(x => x.Key == key);
                 if (entity != null)
                 {
                     return true;

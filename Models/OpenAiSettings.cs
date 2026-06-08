@@ -13,6 +13,10 @@ public class OpenAiSettings
     public bool Enabled { get; set; }
 
     public int MaximumTextLength { get; set; } = 120;
+
+    public int Timeout { get; set; } = 60;
+    
+    public string TimeoutMessage { get; set; } = "Timeout expired";
     
     public string MaximumTextAnswer { get; set; }
 

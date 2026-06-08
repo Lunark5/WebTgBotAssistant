@@ -46,17 +46,34 @@ public class OpenAiClient
             return _openAiSettings.MaximumTextAnswer;
         }
 
-        var messages = new ChatMessage[]
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(_openAiSettings.Timeout));
+
+        try
         {
-            new SystemChatMessage(_openAiSettings.Prompt),
-            new UserChatMessage(message)
-        };
+            var messages = new ChatMessage[]
+            {
+                new SystemChatMessage(_openAiSettings.Prompt),
+                new UserChatMessage(message)
+            };
 
-        var completion = await _chatClient.CompleteChatAsync(messages);
-        var text = completion.Value.Content[0].Text;
+            var completion = await _chatClient.CompleteChatAsync(messages, cancellationToken: cts.Token);
+            var text = completion.Value.Content[0].Text;
 
-        Log.Information($"OpenAI: {text}");
+            Log.Information($"OpenAI: {text}");
 
-        return text;
+            return text;
+        }
+        catch (OperationCanceledException)
+        {
+            Log.Warning("Запрос к OpenAI отменен по таймауту.");
+
+            return _openAiSettings.TimeoutMessage;
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Ошибка при запросе к OpenAI");
+
+            return _openAiSettings.TimeoutMessage;
+        }
     }
 }

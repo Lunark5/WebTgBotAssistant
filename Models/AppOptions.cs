@@ -6,6 +6,8 @@ public class AppOptions
     
     public string TgToken { get; set; }
     
+    public string ApiPassword { get; set; }
+    
     public OpenAiSettings OpenAiSettings { get; set; }
     
     public string ChannelReplyUserId { get; set; }

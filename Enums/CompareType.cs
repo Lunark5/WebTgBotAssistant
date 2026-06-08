@@ -4,6 +4,5 @@ public enum CompareType
 {
     StartsWith,
     EndsWith,
-    Contains,
-    Matches
+    Contains
 }
