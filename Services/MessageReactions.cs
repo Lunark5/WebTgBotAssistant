@@ -69,21 +69,11 @@ public class MessageReactions(
             return;
         }
 
-        if (!string.IsNullOrEmpty(randomMemberReaction?.StickerId))
-        {
-            await botClient.SendSticker(message.Chat.Id, randomMemberReaction.StickerId, new()
-            {
-                MessageId = message.MessageId
-            });
-        }
+        if (!string.IsNullOrEmpty(randomMemberReaction.StickerId))
+            await ReactWithSticker(randomMemberReaction.StickerId, message.Chat.Id, message.MessageId);
 
-        if (!string.IsNullOrEmpty(randomMemberReaction?.Text))
-        {
-            await botClient.SendMessage(message.Chat.Id, randomMemberReaction.Text, ParseMode.None, new()
-            {
-                MessageId = message.MessageId
-            });
-        }
+        if (!string.IsNullOrEmpty(randomMemberReaction.Text))
+            await ReactWithText(randomMemberReaction.Text, message.Chat.Id, message.MessageId);
     }
 
     private async Task ReactToLeaveUser(Message message)
@@ -106,21 +96,11 @@ public class MessageReactions(
             return;
         }
 
-        if (!string.IsNullOrEmpty(randomMemberReaction?.StickerId))
-        {
-            await botClient.SendSticker(message.Chat.Id, randomMemberReaction.StickerId, new()
-            {
-                MessageId = message.MessageId
-            });
-        }
+        if (!string.IsNullOrEmpty(randomMemberReaction.StickerId))
+            await ReactWithSticker(randomMemberReaction.StickerId, message.Chat.Id, message.MessageId);
 
-        if (!string.IsNullOrEmpty(randomMemberReaction?.Text))
-        {
-            await botClient.SendMessage(message.Chat.Id, randomMemberReaction.Text, ParseMode.None, new()
-            {
-                MessageId = message.MessageId
-            });
-        }
+        if (!string.IsNullOrEmpty(randomMemberReaction.Text))
+            await ReactWithText(randomMemberReaction.Text, message.Chat.Id, message.MessageId);
     }
 
     private async Task ReactToChannelMessage(Message message)
@@ -153,43 +133,11 @@ public class MessageReactions(
         }
 
         if (!string.IsNullOrEmpty(randomMemberReaction.StickerId))
-        {
-            await botClient.SendSticker(message.Chat.Id, randomMemberReaction.StickerId, new()
-            {
-                MessageId = message.MessageId
-            });
-        }
+            await ReactWithSticker(randomMemberReaction.StickerId, message.Chat.Id, message.MessageId);
 
-        if (string.IsNullOrEmpty(randomMemberReaction.Text)) return;
-
-        if (string.IsNullOrEmpty(randomMemberReaction.ReplyMarkupText))
-        {
-            await botClient.SendMessage(message.Chat.Id, randomMemberReaction.Text, ParseMode.None, new ReplyParameters
-            {
-                MessageId = message.MessageId,
-            });
-        }
-        else
-        {
-            if (randomMemberReaction.ReplyMarkupUri != null)
-            {
-                var inlineKeyboardMarkup = new InlineKeyboardMarkup(
-                    [
-                        [
-                            InlineKeyboardButton.WithUrl(
-                                text: randomMemberReaction.ReplyMarkupText,
-                                url: randomMemberReaction.ReplyMarkupUri)
-                        ]
-                    ]
-                );
-
-                await botClient.SendMessage(message.Chat.Id, randomMemberReaction.Text, ParseMode.None,
-                    new ReplyParameters
-                    {
-                        MessageId = message.MessageId,
-                    }, inlineKeyboardMarkup);
-            }
-        }
+        if (!string.IsNullOrEmpty(randomMemberReaction.Text))
+            await ReactWithText(randomMemberReaction.Text, message.Chat.Id, message.MessageId,
+                randomMemberReaction.ReplyMarkupText, randomMemberReaction.ReplyMarkupUri);
     }
 
     private async Task ReactToTriggers(Message message)
@@ -222,7 +170,7 @@ public class MessageReactions(
                 await ReactWithSticker(reaction.StickerId, message.Chat.Id, message.MessageId);
 
             if (!string.IsNullOrEmpty(reaction.Text))
-                await ReactWithText(ReplaceVars(reaction.Text), message.Chat.Id, message.MessageId);
+                await ReactWithText(reaction.Text, message.Chat.Id, message.MessageId);
         }
     }
 
@@ -264,17 +212,36 @@ public class MessageReactions(
         });
     }
 
-    private async Task ReactWithText(string text, long chatId, int messageId)
+    private async Task ReactWithText(string text, long chatId, int messageId,
+        string replyMarkupText = "", string replyMarkupUri = "")
     {
         if (string.IsNullOrEmpty(text))
         {
             return;
         }
 
-        await botClient.SendMessage(chatId, text, ParseMode.None, new()
+        if (string.IsNullOrEmpty(replyMarkupText) || string.IsNullOrEmpty(replyMarkupUri))
         {
-            MessageId = messageId
-        });
+            await botClient.SendMessage(chatId, ReplaceVars(text), ParseMode.None, new()
+            {
+                MessageId = messageId
+            });
+        }
+        else
+        {
+            await botClient.SendMessage(chatId, ReplaceVars(text), ParseMode.None, new()
+            {
+                MessageId = messageId
+            }, new InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton.WithUrl(
+                            text: replyMarkupText,
+                            url: replyMarkupUri)
+                    ]
+                ]
+            ));
+        }
     }
 
     private string ReplaceVars(string templateText)
