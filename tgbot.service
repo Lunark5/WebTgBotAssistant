@@ -1,0 +1,19 @@
+[Unit]
+Description=Telegram Bot Webhook Service
+After=network.target
+
+[Service]
+WorkingDirectory=/var/www/TgAssistantLinux
+
+ExecStart=/var/www/TgAssistantLinux/WebTgBotAssistant
+
+Restart=always
+RestartSec=60
+
+Environment=DOTNET_ENVIRONMENT=Production
+
+User=www-data
+Group=www-data
+
+[Install]
+WantedBy=multi-user.target

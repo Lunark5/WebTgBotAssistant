@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Serilog;
+using Serilog.Events;
 using Telegram.Bot;
 using Telegram.Bot.Types;
 using WebTgBotAssistant;
@@ -14,7 +15,9 @@ var builder = WebApplication.CreateBuilder(args);
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
-    .WriteTo.File("Logs/app-.txt", rollingInterval: RollingInterval.Day)
+    .WriteTo.Logger(lc => lc
+        .Filter.ByIncludingOnly(e => e.Level is LogEventLevel.Error or LogEventLevel.Fatal)
+        .WriteTo.File("Logs/app-.txt", rollingInterval: RollingInterval.Day))
     .CreateLogger();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -40,7 +43,6 @@ builder.Services.AddHttpClient("TgBot")
 
         return new TelegramBotClient(token, httpClient);
     });
-
 builder.Services.AddHostedService<OpenAiProcessingWorker>();
 builder.Services.AddTransient<WebHookInitializer>();
 builder.Services.AddScoped<MessageReactions>();

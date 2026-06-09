@@ -43,6 +43,10 @@ ScaffoldingReadMe.txt
 # NuGet Symbol Packages
 *.snupkg
 
+private.pfx
+private.key
+public.pem
+
 # Others
 ~$*
 *~

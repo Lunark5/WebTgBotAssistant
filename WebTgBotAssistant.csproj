@@ -23,4 +23,16 @@
         <PackageReference Include="Telegram.Bot" Version="22.10.0.2-dev.3" />
     </ItemGroup>
 
+    <ItemGroup>
+      <None Update="private.key">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="private.pfx">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+      <None Update="public.pem">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
 </Project>
