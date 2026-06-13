@@ -18,4 +18,6 @@ public class AppOptions
     
 
     public string[] AdminChatIds { get; set; }
+
+    public bool EnableSwagger { get; set; } = false;
 }

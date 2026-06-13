@@ -16,7 +16,7 @@ Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Information()
     .WriteTo.Console()
     .WriteTo.Logger(lc => lc
-        .Filter.ByIncludingOnly(e => e.Level is LogEventLevel.Error or LogEventLevel.Fatal)
+        .Filter.ByIncludingOnly(e => e.Level == LogEventLevel.Error || e.Level == LogEventLevel.Fatal)
         .WriteTo.File("Logs/app-.txt", rollingInterval: RollingInterval.Day))
     .CreateLogger();
 
@@ -60,6 +60,7 @@ var app = builder.Build();
 using var scope = app.Services.CreateScope();
 
 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+var options = scope.ServiceProvider.GetRequiredService<AppOptions>();
 
 context.Database.EnsureCreated();
 
@@ -76,7 +77,11 @@ var user = await botClient.GetMe();
 botInfo.Initialize(user);
 
 app.MapOpenApi();
-app.MapScalarApiReference();
+
+if (options.EnableSwagger)
+{
+    app.MapScalarApiReference();
+}
 
 app.UseHttpsRedirection();
 app.MapPostEndpoints();

@@ -51,11 +51,6 @@ public static class PostEndpoints
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
-                if (reactionDto.Password != options.Value.ApiPassword)
-                {
-                    return Results.BadRequest();
-                }
-
                 if (string.IsNullOrEmpty(reactionDto.Reaction.Key))
                 {
                     return Results.Ok("Ключ пуст");
@@ -90,11 +85,6 @@ public static class PostEndpoints
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
-                if (reactionDto.Password != options.Value.ApiPassword)
-                {
-                    return Results.BadRequest();
-                }
-
                 if (string.IsNullOrEmpty(reactionDto.Key))
                 {
                     Results.Ok("Ключ пуст");
@@ -115,11 +105,6 @@ public static class PostEndpoints
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
-                if (reactionDto.Password != options.Value.ApiPassword)
-                {
-                    return Results.BadRequest();
-                }
-
                 if (string.IsNullOrEmpty(reactionDto.Key))
                 {
                     return Results.Ok("Ключ пуст");
@@ -149,11 +134,6 @@ public static class PostEndpoints
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
-                if (textVarDto.Password != options.Value.ApiPassword)
-                {
-                    return Results.BadRequest();
-                }
-
                 await appDbContext.AddTextVariableAsync(new TextVariable()
                 {
                     Group = textVarDto.Group,
@@ -164,15 +144,8 @@ public static class PostEndpoints
             });
 
         endpoints.MapPost(ApplicationConstants.RefreshDb,
-            async ([FromBody] RefreshDbDTO refreshDbDto,
-                IOptions<AppOptions> options,
-                TriggerCache triggerCache) =>
+            async (TriggerCache triggerCache) =>
             {
-                if (refreshDbDto.Password != options.Value.ApiPassword)
-                {
-                    return Results.BadRequest();
-                }
-
                 await triggerCache.RefreshAsync();
 
                 return Results.Ok($"Успех");
