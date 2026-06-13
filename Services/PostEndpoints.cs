@@ -48,9 +48,15 @@ public static class PostEndpoints
 
         endpoints.MapPost(ApplicationConstants.AddReactionEndpoint,
             async ([FromBody] AddReactionDTO reactionDto,
+                string password,
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
+                if (password != options.Value.ApiPassword)
+                {
+                    return Results.Unauthorized();
+                }
+                
                 if (string.IsNullOrEmpty(reactionDto.Reaction.Key))
                 {
                     return Results.Ok("Ключ пуст");
@@ -82,9 +88,15 @@ public static class PostEndpoints
 
         endpoints.MapPost(ApplicationConstants.RemoveReactionEndpoint,
             async ([FromBody] RemoveReactionDTO reactionDto,
+                string password,
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
+                if (password != options.Value.ApiPassword)
+                {
+                    return Results.Unauthorized();
+                }
+                
                 if (string.IsNullOrEmpty(reactionDto.Key))
                 {
                     Results.Ok("Ключ пуст");
@@ -102,9 +114,15 @@ public static class PostEndpoints
 
         endpoints.MapPost(ApplicationConstants.AddTextMemberReaction,
             async ([FromBody] AddTextMemberReactionDTO reactionDto,
+                string password,
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
+                if (password != options.Value.ApiPassword)
+                {
+                    return Results.Unauthorized();
+                }
+                
                 if (string.IsNullOrEmpty(reactionDto.Key))
                 {
                     return Results.Ok("Ключ пуст");
@@ -131,9 +149,15 @@ public static class PostEndpoints
 
         endpoints.MapPost(ApplicationConstants.AddTextVariable,
             async ([FromBody] AddTextrVariableDTO textVarDto,
+                string password,
                 IOptions<AppOptions> options,
                 AppDbContext appDbContext) =>
             {
+                if (password != options.Value.ApiPassword)
+                {
+                    return Results.Unauthorized();
+                }
+                
                 await appDbContext.AddTextVariableAsync(new TextVariable()
                 {
                     Group = textVarDto.Group,
@@ -144,8 +168,15 @@ public static class PostEndpoints
             });
 
         endpoints.MapPost(ApplicationConstants.RefreshDb,
-            async (TriggerCache triggerCache) =>
+            async (string password,
+                IOptions<AppOptions> options,
+                TriggerCache triggerCache) =>
             {
+                if (password != options.Value.ApiPassword)
+                {
+                    return Results.Unauthorized();
+                }
+                
                 await triggerCache.RefreshAsync();
 
                 return Results.Ok($"Успех");
